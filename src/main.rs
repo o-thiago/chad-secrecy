@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use clap::Parser;
-use image::Rgba;
 
 /// Hide secrets in plain sight.
 #[derive(Parser, Debug)]
@@ -47,7 +46,7 @@ fn main() -> Result<(), Error> {
 
     if amount_of_encoded_pixels > usize::try_from(pixels_count).map_err(anyhow::Error::from)? {
         Err(anyhow!(
-            "Message too large to be encoded on  a ${}x${} image",
+            "Message too large to be encoded on a ${}x${} image",
             dynamic_image.width(),
             dynamic_image.height()
         ))?;
@@ -74,4 +73,12 @@ fn main() -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_bit_positions_are_correct() {}
 }
