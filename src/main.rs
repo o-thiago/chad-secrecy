@@ -1,5 +1,8 @@
+pub mod encoder;
+
 use anyhow::anyhow;
 use clap::Parser;
+use encoder::EncodingPosition;
 
 /// Hide secrets in plain sight.
 #[derive(Parser, Debug)]
@@ -56,6 +59,7 @@ fn main() -> Result<(), Error> {
     let mut img_pixels: Vec<_> = img_buffer.pixels_mut().collect();
 
     let message_bytes = message.as_bytes();
+    let encoder = encoder::Encoder {};
 
     for (i, pixel) in img_pixels
         .iter_mut()
@@ -64,21 +68,15 @@ fn main() -> Result<(), Error> {
     {
         let flatten_initial_bit_index = (i * AMOUNT_RGB_CHANNELS).max(0);
         for (i, rgb_value) in pixel.0.iter_mut().take(AMOUNT_RGB_CHANNELS).enumerate() {
-            let current_byte = message_bytes[(flatten_initial_bit_index + i) / BYTE_LEN];
-            let read_bit =
-                (1 << ((flatten_initial_bit_index % BYTE_LEN) - i)) & usize::from(current_byte);
+            let EncodingPosition(byte_position, bit_position) =
+                encoder.get_encoding_position(flatten_initial_bit_index, i);
+
+            let current_byte = message_bytes[byte_position];
+            let read_bit = (1 << bit_position) & usize::from(current_byte);
 
             *rgb_value = read_bit as f32;
         }
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn the_bit_positions_are_correct() {}
 }

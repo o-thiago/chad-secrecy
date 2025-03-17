@@ -29,7 +29,9 @@
         {
           devShells.default = pkgs.mkShell {
             packages =
-              [ toolchain ]
+              [
+                toolchain
+              ]
               ++ (with pkgs; [
                 nixfmt-rfc-style
               ]);
