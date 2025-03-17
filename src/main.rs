@@ -63,11 +63,13 @@ fn main() -> Result<(), Error> {
         .take(amount_of_encoded_pixels)
         .enumerate()
     {
-        let get_position_for_flatten_bit_index = |bit_index| bit_index;
-        let get_byte_index = |bit_index| j / BYTE_LEN;
         let flatten_initial_bit_index = (i * AMOUNT_RGB_CHANNELS).max(0);
-
-        **pixel = Rgba([pixel[0], pixel[1], pixel[2], pixel[3]]);
+        for (i, rgb_value) in pixel.0.iter_mut().take(AMOUNT_RGB_CHANNELS).enumerate() {
+            let current_byte = message_bytes[flatten_initial_bit_index / BYTE_LEN];
+            let read_bit =
+                (1 << (flatten_initial_bit_index % BYTE_LEN) - i) & usize::from(current_byte);
+            *rgb_value = 0.;
+        }
     }
 
     Ok(())
