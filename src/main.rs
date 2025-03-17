@@ -18,7 +18,7 @@ struct Args {
 #[derive(thiserror::Error, Debug)]
 enum Error {
     #[error("An unexpected state happened when executing the program")]
-    Unknown,
+    _Unknown,
 
     #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
@@ -65,10 +65,11 @@ fn main() -> Result<(), Error> {
     {
         let flatten_initial_bit_index = (i * AMOUNT_RGB_CHANNELS).max(0);
         for (i, rgb_value) in pixel.0.iter_mut().take(AMOUNT_RGB_CHANNELS).enumerate() {
-            let current_byte = message_bytes[flatten_initial_bit_index / BYTE_LEN];
+            let current_byte = message_bytes[(flatten_initial_bit_index + i) / BYTE_LEN];
             let read_bit =
-                (1 << (flatten_initial_bit_index % BYTE_LEN) - i) & usize::from(current_byte);
-            *rgb_value = 0.;
+                (1 << ((flatten_initial_bit_index % BYTE_LEN) - i)) & usize::from(current_byte);
+
+            *rgb_value = read_bit as f32;
         }
     }
 
