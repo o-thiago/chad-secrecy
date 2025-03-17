@@ -1,19 +1,47 @@
 pub mod encoder;
 
 use anyhow::anyhow;
-use clap::Parser;
+use clap::{Parser, Subcommand};
+
+#[derive(Debug, Clone, Copy, strum::Display, strum::EnumString)]
+#[strum(serialize_all = "lowercase")]
+pub enum Mode {
+    Write,
+    Read,
+}
 
 /// Hide secrets in plain sight.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Debug, clap::Args)]
+struct WriteArgs {
     /// Path to the image that will be stored with a secret.
-    #[arg(short)]
+    #[arg(short, long)]
     image_path: std::path::PathBuf,
 
-    /// The message to be encoded on the image
+    /// The message to be encoded on the image.
     #[arg(short, long)]
     message: String,
+}
+
+#[derive(Debug, clap::Args)]
+struct ReadArgs {
+    /// Path to the image that contains the secret message.
+    #[arg(short, long)]
+    image_path: std::path::PathBuf,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// Write mode: encode a message into an image.
+    Write(WriteArgs),
+    /// Read mode: decode a message from an image.
+    Read(ReadArgs),
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -29,12 +57,23 @@ const AMOUNT_RGB_CHANNELS: usize = 3;
 const BYTE_LEN: usize = 8;
 
 fn main() -> Result<(), Error> {
-    let Args {
-        message,
-        image_path,
-        ..
-    } = Args::parse();
+    let Args { command, .. } = Args::parse();
 
+    match command {
+        Command::Write(write_args) => write(write_args)?,
+        Command::Read(..) => todo!(),
+    }
+
+    Ok(())
+}
+
+fn write(
+    WriteArgs {
+        image_path,
+        message,
+        ..
+    }: WriteArgs,
+) -> Result<(), Error> {
     let dynamic_image =
         image::open(image_path).map_err(|_| anyhow!("Failed to open the requested image"))?;
 
