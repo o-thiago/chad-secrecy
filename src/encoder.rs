@@ -15,26 +15,21 @@ impl EncodingPosition {
             bit_position,
         }
     }
+
+    pub fn get_from_flatten_initial_bit_index(
+        flatten_initial_bit_index: usize,
+        rgb_channel_index: usize,
+    ) -> Self {
+        Self::new(
+            (flatten_initial_bit_index + 1) / BYTE_LEN,
+            (flatten_initial_bit_index % BYTE_LEN) - rgb_channel_index,
+        )
+    }
 }
 
 pub struct Encoder<'a> {
     pub pixels: &'a mut Vec<&'a mut Rgba<f32>>,
     pub message_bytes: &'a [u8],
-}
-
-pub struct EncoderUtil();
-
-impl EncoderUtil {
-    pub fn get_encoding_position(
-        &self,
-        flatten_initial_bit_index: usize,
-        rgb_channel_index: usize,
-    ) -> EncodingPosition {
-        EncodingPosition {
-            byte_position: (flatten_initial_bit_index + 1) / BYTE_LEN,
-            bit_position: (flatten_initial_bit_index % BYTE_LEN) - rgb_channel_index,
-        }
-    }
 }
 
 impl<'a> Encoder<'a> {
@@ -57,7 +52,10 @@ impl<'a> Encoder<'a> {
                 let EncodingPosition {
                     byte_position,
                     bit_position,
-                } = EncoderUtil().get_encoding_position(flatten_initial_bit_index, i);
+                } = EncodingPosition::get_from_flatten_initial_bit_index(
+                    flatten_initial_bit_index,
+                    i,
+                );
 
                 let current_byte = self.message_bytes[byte_position];
                 let read_bit = (1 << bit_position) & usize::from(current_byte);
@@ -74,7 +72,6 @@ mod tests {
 
     #[test]
     fn encoder_encodes_to_correct_position() {
-        let encoder_util = EncoderUtil();
         for ((flatten_bit_index, rgb_channel_index), (target_byte_position, target_bit_position)) in [
             ((0, 0), (0, 0)),
             ((1, 0), (0, 1)),
@@ -82,11 +79,11 @@ mod tests {
             ((9, 0), (1, 1)),
         ] {
             assert_eq!(
-                encoder_util.get_encoding_position(flatten_bit_index, rgb_channel_index),
-                EncodingPosition {
-                    byte_position: target_byte_position,
-                    bit_position: target_bit_position
-                }
+                EncodingPosition::new(target_byte_position, target_bit_position),
+                EncodingPosition::get_from_flatten_initial_bit_index(
+                    flatten_bit_index,
+                    rgb_channel_index
+                ),
             );
         }
     }
