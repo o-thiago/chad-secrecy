@@ -1,9 +1,5 @@
 use image::Rgba;
-use rand::{
-    Rng,
-    rngs::ThreadRng,
-    seq::{IndexedRandom, IteratorRandom},
-};
+use rand::{Rng, seq::IteratorRandom};
 
 use crate::{AMOUNT_RGB_CHANNELS, BYTE_LEN};
 
@@ -45,7 +41,11 @@ impl<'a> Encoder<'a> {
         }
     }
 
-    pub fn encode_to_image(&mut self, rng: &mut ThreadRng, amount_of_encoded_pixels: usize) {
+    pub fn encode_to_image<R: Rng + Sized>(
+        &mut self,
+        rng: &mut R,
+        amount_of_encoded_pixels: usize,
+    ) {
         for (i, pixel) in self
             .pixels
             .iter_mut()

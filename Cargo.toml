@@ -8,6 +8,8 @@ anyhow = "1.0.97"
 clap = { version = "4.5.32", features = ["derive"] }
 image = "0.25.5"
 rand = "0.9.0"
+rand_pcg = "0.9.0"
+rand_seeder = "0.4.0"
 strum = { version = "0.27.1", features = ["derive", "strum_macros"] }
 text_io = "0.1.13"
 thiserror = "2.0.12"

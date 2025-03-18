@@ -2,6 +2,8 @@ pub mod encoder;
 
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};
+use rand_pcg::Pcg64;
+use rand_seeder::Seeder;
 
 #[derive(Debug, Clone, Copy, strum::Display, strum::EnumString)]
 #[strum(serialize_all = "lowercase")]
@@ -27,6 +29,10 @@ struct WriteArgs {
     /// The message to be encoded on the image.
     #[arg(short, long)]
     message: String,
+
+    /// The seed to encode the image with.
+    #[arg(short, long)]
+    seed: Option<String>,
 }
 
 #[derive(Debug, clap::Args)]
@@ -71,6 +77,7 @@ fn write(
     WriteArgs {
         image_path,
         message,
+        seed,
         ..
     }: WriteArgs,
 ) -> Result<(), Error> {
@@ -96,7 +103,7 @@ fn write(
     let mut img_buffer = dynamic_image.to_rgba32f();
     let mut img_pixels: Vec<_> = img_buffer.pixels_mut().collect();
 
-    let mut rng = rand::rng();
+    let mut rng: Pcg64 = Seeder::from(seed.unwrap_or_default()).into_rng();
     encoder::Encoder::new(&mut img_pixels, message.as_bytes())
         .encode_to_image(&mut rng, amount_of_encoded_pixels);
 
