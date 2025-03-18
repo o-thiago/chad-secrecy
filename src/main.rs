@@ -1,8 +1,8 @@
-pub mod encoder;
+mod read;
 mod write;
 
 use clap::{Parser, Subcommand};
-use write::WriteArgs;
+use write::{WriteArgs, write::write};
 
 #[derive(Debug, Clone, Copy, strum::Display, strum::EnumString)]
 #[strum(serialize_all = "lowercase")]
@@ -50,7 +50,7 @@ fn main() -> Result<(), Error> {
     let Args { command, .. } = Args::parse();
 
     match command {
-        Command::Write(write_args) => write::write(write_args)?,
+        Command::Write(write_args) => write(write_args)?,
         Command::Read(..) => todo!(),
     }
 
