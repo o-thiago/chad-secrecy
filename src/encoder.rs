@@ -1,14 +1,19 @@
 use image::Rgba;
+use rand::{
+    Rng,
+    rngs::ThreadRng,
+    seq::{IndexedRandom, IteratorRandom},
+};
 
 use crate::{AMOUNT_RGB_CHANNELS, BYTE_LEN};
 
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
-pub struct EncodingPosition {
+pub struct MessageEncodingPosition {
     pub byte_position: usize,
     pub bit_position: usize,
 }
 
-impl EncodingPosition {
+impl MessageEncodingPosition {
     pub fn new(byte_position: usize, bit_position: usize) -> Self {
         Self {
             byte_position,
@@ -40,19 +45,20 @@ impl<'a> Encoder<'a> {
         }
     }
 
-    pub fn encode_to_image(&mut self, amount_of_encoded_pixels: usize) {
+    pub fn encode_to_image(&mut self, rng: &mut ThreadRng, amount_of_encoded_pixels: usize) {
         for (i, pixel) in self
             .pixels
             .iter_mut()
             .take(amount_of_encoded_pixels)
             .enumerate()
+            .choose_multiple(rng, amount_of_encoded_pixels)
         {
             let flatten_initial_bit_index = (i * AMOUNT_RGB_CHANNELS).max(0);
             for (i, rgb_value) in pixel.0.iter_mut().take(AMOUNT_RGB_CHANNELS).enumerate() {
-                let EncodingPosition {
+                let MessageEncodingPosition {
                     byte_position,
                     bit_position,
-                } = EncodingPosition::get_from_flatten_initial_bit_index(
+                } = MessageEncodingPosition::get_from_flatten_initial_bit_index(
                     flatten_initial_bit_index,
                     i,
                 );
@@ -79,8 +85,8 @@ mod tests {
             ((9, 0), (1, 1)),
         ] {
             assert_eq!(
-                EncodingPosition::new(target_byte_position, target_bit_position),
-                EncodingPosition::get_from_flatten_initial_bit_index(
+                MessageEncodingPosition::new(target_byte_position, target_bit_position),
+                MessageEncodingPosition::get_from_flatten_initial_bit_index(
                     flatten_bit_index,
                     rgb_channel_index
                 ),

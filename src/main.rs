@@ -96,9 +96,9 @@ fn write(
     let mut img_buffer = dynamic_image.to_rgba32f();
     let mut img_pixels: Vec<_> = img_buffer.pixels_mut().collect();
 
-    let message_bytes = message.as_bytes();
-    let mut encoder = encoder::Encoder::new(&mut img_pixels, message_bytes);
-    encoder.encode_to_image(amount_of_encoded_pixels);
+    let mut rng = rand::rng();
+    encoder::Encoder::new(&mut img_pixels, message.as_bytes())
+        .encode_to_image(&mut rng, amount_of_encoded_pixels);
 
     Ok(())
 }
